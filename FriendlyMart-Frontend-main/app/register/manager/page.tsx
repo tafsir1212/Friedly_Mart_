@@ -4,8 +4,9 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
-const API = "http://localhost:3000/manager";
+const API = `${API_BASE_URL}/manager`;
 
 const ManagerRegisterPage = () => {
   const [form, setForm] = useState({

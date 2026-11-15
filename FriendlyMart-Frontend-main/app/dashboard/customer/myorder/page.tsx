@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Filter,
 } from "lucide-react";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending:    { label: "Pending",    color: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",   icon: Clock        },
@@ -47,7 +48,7 @@ export default function OrdersPage() {
         const customerId = payload.sub;
 
         const res = await axios.get(
-          `http://localhost:3000/customer/my-orders/${customerId}`,
+          `${API_BASE_URL}/customer/my-orders/${customerId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setOrders(res.data);
@@ -234,7 +235,7 @@ export default function OrdersPage() {
                             <img
                               src={
                                 item.product?.productImage
-                                  ? `http://localhost:3000/uploads/products/${item.product.productImage}`
+                                  ? `${API_BASE_URL}/uploads/products/${item.product.productImage}`
                                   : "/no-image.png"
                               }
                               alt={item.product?.productName}

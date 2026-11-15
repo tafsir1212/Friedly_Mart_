@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 
 import Button from "@mui/material/Button";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 type AddToCartButtonProps = {
   productId: number;
@@ -41,7 +42,7 @@ export default function AddToCartButton({
 
       // API
       await axios.post(
-        `http://localhost:3000/customer/cart/${customerId}/${productId}`,
+        `${API_BASE_URL}/customer/cart/${customerId}/${productId}`,
         {},
         {
           headers: {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 const customerSchema = z
   .object({
@@ -59,7 +60,7 @@ export default function CustomerRegisterPage() {
 
       // Backend API Call
       const res = await axios.post(
-        "http://localhost:3000/customer/register",
+        `${API_BASE_URL}/customer/register`,
         {
           name: formData.name,
           email: formData.email,

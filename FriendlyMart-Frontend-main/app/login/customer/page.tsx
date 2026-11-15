@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import { Mail, Lock, Eye, EyeOff, ShoppingBag, ArrowRight } from "lucide-react";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -39,7 +40,7 @@ export default function CustomerLoginPage() {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3000/customer/login", {
+      const res = await axios.post(`${API_BASE_URL}/customer/login`, {
         email: formData.email,
         password: formData.password,
       });

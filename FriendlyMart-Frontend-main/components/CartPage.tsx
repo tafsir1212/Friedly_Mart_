@@ -4,6 +4,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "@/app/lib/api-url";
 import {
   Trash2,
   Minus,
@@ -35,7 +36,7 @@ export default function CartPage() {
       const customerId = payload.sub;
 
       const res = await axios.post(
-        `http://localhost:3000/customer/orders/${customerId}`,
+        `${API_BASE_URL}/customer/orders/${customerId}`,
         { paymentMethod },
         {
           headers: {
@@ -75,7 +76,7 @@ export default function CartPage() {
         const customerId = payload.sub;
 
         const res = await axios.get(
-          `http://localhost:3000/customer/cart/${customerId}`,
+          `${API_BASE_URL}/customer/cart/${customerId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -104,7 +105,7 @@ export default function CartPage() {
       const token = Cookies.get("token");
 
       await axios.delete(
-        `http://localhost:3000/customer/cart/${id}`,
+        `${API_BASE_URL}/customer/cart/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -137,7 +138,7 @@ export default function CartPage() {
       if (newQuantity < 1) return;
 
       await axios.patch(
-        `http://localhost:3000/customer/cart/${id}`,
+        `${API_BASE_URL}/customer/cart/${id}`,
         { quantity: newQuantity },
         {
           headers: {
@@ -250,7 +251,7 @@ export default function CartPage() {
                 <img
                   src={
                     item.product?.productImage
-                      ? `http://localhost:3000/uploads/products/${item.product.productImage}`
+                      ? `${API_BASE_URL}/uploads/products/${item.product.productImage}`
                       : "/no-image.png"
                   }
                   className="rounded-lg w-24 h-24 object-cover"

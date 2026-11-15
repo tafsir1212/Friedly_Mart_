@@ -16,8 +16,7 @@ import axios from "axios";
 import Link from "next/link";
 
 import AddToCartButton from "@/components/AddToCartButton";
-
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 type SellerShop = {
   id: number;

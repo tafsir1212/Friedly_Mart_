@@ -4,6 +4,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 import {
   ChevronRight,
@@ -67,7 +68,7 @@ export default function RecentOrders() {
         const customerId = payload.sub;
 
         const res = await axios.get(
-          `http://localhost:3000/customer/my-orders/${customerId}`,
+          `${API_BASE_URL}/customer/my-orders/${customerId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -176,7 +177,7 @@ export default function RecentOrders() {
                     src={
                       featuredOrder.orderItems?.[0]
                         ?.product?.productImage
-                        ? `http://localhost:3000/uploads/products/${featuredOrder.orderItems[0].product.productImage}`
+                        ? `${API_BASE_URL}/uploads/products/${featuredOrder.orderItems[0].product.productImage}`
                         : "/no-image.png"
                     }
                     alt="Product"
@@ -276,7 +277,7 @@ export default function RecentOrders() {
                       src={
                         order.orderItems?.[0]
                           ?.product?.productImage
-                          ? `http://localhost:3000/uploads/products/${order.orderItems[0].product.productImage}`
+                          ? `${API_BASE_URL}/uploads/products/${order.orderItems[0].product.productImage}`
                           : "/no-image.png"
                       }
                       alt="Product"

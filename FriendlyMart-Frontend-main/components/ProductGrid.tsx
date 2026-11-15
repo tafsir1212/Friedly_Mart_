@@ -16,6 +16,7 @@ import StorefrontIcon from "@mui/icons-material/Storefront";
 
 import ProductFilterBar from "./ProductFilterBar";
 import AddToCartButton from "./AddToCartButton";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 export type SellerShop = {
   id: number;
@@ -36,8 +37,6 @@ export type Product = {
 };
 
 export type PriceFilter = "default" | "lowToHigh" | "highToLow";
-
-const API_BASE_URL = "http://localhost:3000";
 
 async function getProducts(): Promise<Product[]> {
   try {

@@ -4,6 +4,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "@/app/lib/api-url";
 import {
   Camera,
   User,
@@ -32,7 +33,7 @@ export default function CustomerProfilePage() {
     }
 
     axios
-      .get("http://localhost:3000/customer/profile", {
+      .get(`${API_BASE_URL}/customer/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -63,7 +64,7 @@ export default function CustomerProfilePage() {
       if (profilePic) fd.append("profilePic", profilePic);
 
       const res = await axios.put(
-        `http://localhost:3000/customer/profile/${user.id}`,
+        `${API_BASE_URL}/customer/profile/${user.id}`,
         fd,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -85,7 +86,7 @@ export default function CustomerProfilePage() {
   const avatarSrc =
     preview ||
     (user?.profilePic
-      ? `http://localhost:3000/uploads/profile/${user.profilePic}?t=${Date.now()}`
+      ? `${API_BASE_URL}/uploads/profile/${user.profilePic}?t=${Date.now()}`
       : null);
 
   const initials = user?.name

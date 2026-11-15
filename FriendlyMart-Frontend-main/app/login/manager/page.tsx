@@ -5,8 +5,9 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
-const API = "http://localhost:3000/manager";
+const API = `${API_BASE_URL}/manager`;
 
 const ManagerLoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });

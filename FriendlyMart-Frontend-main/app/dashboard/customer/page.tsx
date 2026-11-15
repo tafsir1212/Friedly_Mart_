@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "@/app/lib/api-url";
 
 import {
   User,
@@ -75,7 +76,7 @@ export default function CustomerDashboard() {
     const payload = JSON.parse(atob(token.split(".")[1]));
 
     axios
-      .get("http://localhost:3000/customer/profile", {
+      .get(`${API_BASE_URL}/customer/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -84,7 +85,7 @@ export default function CustomerDashboard() {
       .catch(console.log);
 
     axios
-      .get(`http://localhost:3000/customer/my-orders/${payload.sub}`, {
+      .get(`${API_BASE_URL}/customer/my-orders/${payload.sub}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -252,7 +253,7 @@ export default function CustomerDashboard() {
                     <img
                       src={
                         user?.profilePic
-                          ? `http://localhost:3000/uploads/profile/${user.profilePic}`
+                          ? `${API_BASE_URL}/uploads/profile/${user.profilePic}`
                           : "/no-image.png"
                       }
                       alt="profile"

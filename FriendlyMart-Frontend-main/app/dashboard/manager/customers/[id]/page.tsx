@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "../../../../lib/api";
+import { API_BASE_URL } from "@/app/lib/api-url";
 import Cookies from "js-cookie";
 import Link from "next/link";
 
@@ -94,7 +95,7 @@ export default function ManagerCustomerDetailPage() {
             <div>
               {customer.profilePic ? (
                 <img
-                  src={`http://localhost:3000/uploads/profile/${customer.profilePic}`}
+                  src={`${API_BASE_URL}/uploads/profile/${customer.profilePic}`}
                   alt="pic"
                   className="border border-white/10 rounded-full w-20 h-20 object-cover"
                 />

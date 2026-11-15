@@ -1,12 +1,10 @@
 // app/lib/api.ts
 import axios from "axios";
 import Cookies from "js-cookie";
-
-// Base URL pointing to the NestJS backend (adjust if proxy differs)
-const baseURL = "http://localhost:3000";
+import { API_BASE_URL } from "./api-url";
 
 const api = axios.create({
-  baseURL,
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
