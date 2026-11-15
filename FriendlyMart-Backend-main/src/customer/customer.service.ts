@@ -1,3 +1,4 @@
+import { getJwtSecret } from '../auth/jwt-secret';
 import { CreateCustomerDto, UpdateProfileDto } from './customer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { customerEntity } from './customer.entity';
@@ -82,7 +83,7 @@ export class CustomerService {
     };
 
     const token = this.jwtService.sign(payload, {
-      secret: 'mySecretKey',
+      secret: getJwtSecret(),
     });
 
     return {
@@ -115,13 +116,12 @@ export class CustomerService {
   async updateProfile(
     id: number,
     dto: UpdateProfileDto,
-    file?: Express.Multer.File,
+    profilePicFilename?: string,
   ) {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new BadRequestException('User not found');
 
-    // Only save the file name in DB
-    if (file) user.profilePic = file.filename;
+    if (profilePicFilename) user.profilePic = profilePicFilename;
 
     Object.assign(user, dto);
 

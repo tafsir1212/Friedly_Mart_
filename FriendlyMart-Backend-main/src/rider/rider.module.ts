@@ -1,3 +1,4 @@
+import { getJwtSecret } from '../auth/jwt-secret';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Rider } from './rider.entity';
@@ -17,9 +18,11 @@ import { PusherModule } from 'src/pusher/pusher.module';
       isGlobal: true,
     }),
 
-    JwtModule.register({
-      secret: 'mySecretKey',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: getJwtSecret(),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
     TypeOrmModule.forFeature([Rider, Review, Order, Delivery]),
     PusherModule,
@@ -29,8 +32,8 @@ import { PusherModule } from 'src/pusher/pusher.module';
         port: 587,
         secure: true,
         auth: {
-          user: process.env.Email,
-          pass: process.env.EmailPassword,
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASS,
         },
       },
     }),

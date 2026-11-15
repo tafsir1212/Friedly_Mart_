@@ -3,12 +3,14 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
   Post,
   Put,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -16,8 +18,14 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { existsSync } from 'fs';
+import { basename, extname, resolve } from 'path';
+import type { Response } from 'express';
+import {
+  createUploadStorage,
+  productionImageLimits,
+} from '../storage/multer-storage';
+import { SupabaseStorageService } from '../storage/supabase-storage.service';
 
 import { ManagerJwtAuthGuard } from './manager-jwt-auth.guard';
 import { ManagerService } from './manager.service';
@@ -34,7 +42,10 @@ import {
 
 @Controller('manager')
 export class ManagerController {
-  constructor(private readonly managerService: ManagerService) {}
+  constructor(
+    private readonly managerService: ManagerService,
+    private readonly imageStorage: SupabaseStorageService,
+  ) {}
 
   // =============================================
   // REGISTER MANAGER (with profile image upload)
@@ -43,7 +54,8 @@ export class ManagerController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @UseInterceptors(
     FileInterceptor('profile_image', {
-      storage: diskStorage({
+      limits: productionImageLimits(),
+      storage: createUploadStorage({
         destination: './uploads/managers',
         filename: (req, file, cb) => {
           const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -52,11 +64,14 @@ export class ManagerController {
       }),
     }),
   )
-  registerManager(
+  async registerManager(
     @Body() dto: CreateManagerDto,
     @UploadedFile() profileImage?: Express.Multer.File,
   ) {
-    return this.managerService.createManager(dto, profileImage?.filename);
+    const storedImage = profileImage
+      ? await this.imageStorage.storeImage(profileImage, 'managers')
+      : undefined;
+    return this.managerService.createManager(dto, storedImage?.filename);
   }
 
   // =============================================
@@ -90,7 +105,8 @@ export class ManagerController {
   @UseGuards(ManagerJwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('profile_image', {
-      storage: diskStorage({
+      limits: productionImageLimits(),
+      storage: createUploadStorage({
         destination: './uploads/managers',
         filename: (req, file, cb) => {
           const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -99,15 +115,18 @@ export class ManagerController {
       }),
     }),
   )
-  updateProfile(
+  async updateProfile(
     @Req() req: any,
     @Body() dto: UpdateManagerProfileDto,
     @UploadedFile() profileImage?: Express.Multer.File,
   ) {
+    const storedImage = profileImage
+      ? await this.imageStorage.storeImage(profileImage, 'managers')
+      : undefined;
     return this.managerService.updateProfile(
       req.user.id,
       dto,
-      profileImage?.filename,
+      storedImage?.filename,
     );
   }
 
@@ -162,6 +181,33 @@ export class ManagerController {
   @UseGuards(ManagerJwtAuthGuard)
   getSellerById(@Param('id', ParseIntPipe) id: number) {
     return this.managerService.getSellerById(id);
+  }
+
+  @Get('sellers/:id/nid-image')
+  @UseGuards(ManagerJwtAuthGuard)
+  async getSellerNidImage(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() response: Response,
+  ) {
+    const filename = await this.managerService.getSellerNidImageFilename(id);
+    if (
+      basename(filename) !== filename ||
+      filename.includes('/') ||
+      filename.includes('\\')
+    ) {
+      throw new NotFoundException('Seller NID image not found');
+    }
+
+    const localPath = resolve(process.cwd(), 'uploads', filename);
+    response.setHeader('Cache-Control', 'private, no-store');
+    if (existsSync(localPath)) {
+      return response.sendFile(localPath);
+    }
+
+    return response.redirect(
+      302,
+      await this.imageStorage.getNidSignedUrl(filename),
+    );
   }
 
   @Patch('sellers/:id/block')

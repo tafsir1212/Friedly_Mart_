@@ -18,8 +18,12 @@ import {
 } from '@nestjs/common';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { extname } from 'path';
+import {
+  createUploadStorage,
+  productionImageLimits,
+} from '../storage/multer-storage';
+import { SupabaseStorageService } from '../storage/supabase-storage.service';
 
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -37,7 +41,10 @@ import { DeliveryStatus } from './delivery.entity';
 
 @Controller('riders')
 export class RiderController {
-  constructor(private readonly riderService: RiderService) {}
+  constructor(
+    private readonly riderService: RiderService,
+    private readonly imageStorage: SupabaseStorageService,
+  ) {}
 
   // =========================================
   // CREATE RIDER (WITH PROFILE IMAGE UPLOAD)
@@ -46,7 +53,8 @@ export class RiderController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @UseInterceptors(
     FileInterceptor('profileImage', {
-      storage: diskStorage({
+      limits: productionImageLimits(),
+      storage: createUploadStorage({
         destination: './uploads/riders',
 
         filename: (req, file, cb) => {
@@ -57,15 +65,14 @@ export class RiderController {
       }),
     }),
   )
-  createRider(
+  async createRider(
     @Body() dto: CreateRiderDto,
     @UploadedFile() profileImage: Express.Multer.File,
   ): Promise<Rider> {
-    if (profileImage) {
-      (dto as any).profileImage = profileImage.filename;
-    }
-
-    return this.riderService.createRider(dto);
+    const storedImage = profileImage
+      ? await this.imageStorage.storeImage(profileImage, 'riders')
+      : undefined;
+    return this.riderService.createRider(dto, storedImage?.filename);
   }
 
   // =========================================
@@ -139,7 +146,8 @@ export class RiderController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('profileImage', {
-      storage: diskStorage({
+      limits: productionImageLimits(),
+      storage: createUploadStorage({
         destination: './uploads/riders',
         filename: (req, file, cb) => {
           const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -149,16 +157,19 @@ export class RiderController {
       }),
     }),
   )
-  updateRider(
+  async updateRider(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateRiderDto,
     @UploadedFile() profileImage?: Express.Multer.File,
   ) {
-    if (profileImage) {
-      (dto as any).profileImage = profileImage.filename;
-    }
-
-    return this.riderService.updateRider(id, dto);
+    const storedImage = profileImage
+      ? await this.imageStorage.storeImage(profileImage, 'riders')
+      : undefined;
+    return this.riderService.updateRider(
+      id,
+      dto,
+      storedImage?.filename,
+    );
   }
 
   // =========================================

@@ -1,3 +1,4 @@
+import { getJwtSecret } from '../auth/jwt-secret';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -22,9 +23,11 @@ import { PusherModule } from '../pusher/pusher.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    JwtModule.register({
-      secret: 'mySecretKey',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: getJwtSecret(),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
     TypeOrmModule.forFeature([
       Manager,

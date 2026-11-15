@@ -1,3 +1,4 @@
+import { getJwtSecret } from '../auth/jwt-secret';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -10,7 +11,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         ignoreNotBefore: true, // Ignore "nbf" claim to prevent "Token not active" errors
       },
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: 'mySecretKey',
+      secretOrKey: getJwtSecret(),
     });
   }
 

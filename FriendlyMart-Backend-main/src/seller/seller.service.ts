@@ -59,9 +59,9 @@ export class SellerService {
 
   async createSeller(
     dto: SellerRegistrationDto,
-    nidImage: Express.Multer.File,
+    nidImageFilename?: string,
   ): Promise<object> {
-    if (!nidImage) {
+    if (!nidImageFilename) {
       throw new BadRequestException('NID image is required');
     }
 
@@ -109,7 +109,7 @@ export class SellerService {
       email: dto.email,
       phone: dto.phone,
       nidNumber: dto.nidNumber,
-      nidImage: nidImage.filename,
+      nidImage: nidImageFilename,
       password: hashedPassword,
     });
 
@@ -238,7 +238,7 @@ export class SellerService {
   async updateSeller(
     id: number,
     dto: UpdateSellerDto,
-    nidImage?: Express.Multer.File,
+    nidImageFilename?: string,
   ): Promise<object> {
     const seller = await this.sellerRepository.findOne({
       where: { id },
@@ -283,8 +283,8 @@ export class SellerService {
 
     Object.assign(seller, dto);
 
-    if (nidImage) {
-      seller.nidImage = nidImage.filename;
+    if (nidImageFilename) {
+      seller.nidImage = nidImageFilename;
     }
 
     const updatedSeller = await this.sellerRepository.save(seller);
@@ -328,7 +328,7 @@ export class SellerService {
   async createProductForSeller(
     sellerId: number,
     dto: CreateProductDto,
-    productImage?: Express.Multer.File,
+    productImageFilename?: string,
   ): Promise<object> {
     const seller = await this.sellerRepository.findOne({
       where: { id: sellerId },
@@ -353,7 +353,7 @@ export class SellerService {
       description: dto.description,
       price: dto.price,
       quantity: dto.quantity,
-      productImage: productImage ? productImage.filename : null,
+      productImage: productImageFilename ?? null,
       seller,
       sellerShop: seller.shop,
     });
@@ -482,7 +482,7 @@ export class SellerService {
   async updateProduct(
     id: number,
     dto: UpdateProductDto,
-    productImage?: Express.Multer.File,
+    productImageFilename?: string,
   ): Promise<object> {
     const product = await this.productRepository.findOne({
       where: { id },
@@ -498,8 +498,8 @@ export class SellerService {
 
     Object.assign(product, dto);
 
-    if (productImage) {
-      product.productImage = productImage.filename;
+    if (productImageFilename) {
+      product.productImage = productImageFilename;
     }
 
     const updatedProduct = await this.productRepository.save(product);

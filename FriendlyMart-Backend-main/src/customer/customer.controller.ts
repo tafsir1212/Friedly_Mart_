@@ -22,13 +22,20 @@ import { CreateCustomerDto, UpdateProfileDto } from './customer.dto';
 import { customerEntity } from './customer.entity';
 import { ProductEntity } from 'src/seller/entities/product.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import {
+  createUploadStorage,
+  productionImageLimits,
+} from '../storage/multer-storage';
+import { SupabaseStorageService } from '../storage/supabase-storage.service';
 
 @Controller('customer')
 export class CustomerController {
-  constructor(private readonly customerService: CustomerService) {}
+  constructor(
+    private readonly customerService: CustomerService,
+    private readonly imageStorage: SupabaseStorageService,
+  ) {}
 
   @Post('register')
   @UsePipes(new ValidationPipe())
@@ -54,7 +61,8 @@ export class CustomerController {
   @Put('profile/:id')
   @UseInterceptors(
     FileInterceptor('profilePic', {
-      storage: diskStorage({
+      limits: productionImageLimits(),
+      storage: createUploadStorage({
         destination: './uploads/profile', // folder to save images
         filename: (req, file, cb) => {
           const randomName = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -72,12 +80,15 @@ export class CustomerController {
       },
     }),
   )
-  updateProfile(
+  async updateProfile(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProfileDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.customerService.updateProfile(id, dto, file);
+    const storedImage = file
+      ? await this.imageStorage.storeImage(file, 'profile')
+      : undefined;
+    return this.customerService.updateProfile(id, dto, storedImage?.filename);
   }
   @Get('products/:id')
   getProductById(@Param('id', ParseIntPipe) id: number): Promise<object> {

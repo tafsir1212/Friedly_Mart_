@@ -18,10 +18,11 @@ import {
 } from '@nestjs/common';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 
 import { SellerService } from './seller.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { createUploadStorage } from '../storage/multer-storage';
+import { SupabaseStorageService } from '../storage/supabase-storage.service';
 
 import {
   SellerRegistrationDto,
@@ -35,7 +36,10 @@ import { SellerOrderItemStatus } from 'src/customer/order-item.entity';
 
 @Controller('seller')
 export class SellerController {
-  constructor(private readonly sellerService: SellerService) {}
+  constructor(
+    private readonly sellerService: SellerService,
+    private readonly imageStorage: SupabaseStorageService,
+  ) {}
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -54,7 +58,7 @@ export class SellerController {
         }
       },
       limits: { fileSize: 2 * 1024 * 1024 },
-      storage: diskStorage({
+      storage: createUploadStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
           cb(null, Date.now() + '-' + file.originalname);
@@ -62,11 +66,14 @@ export class SellerController {
       }),
     }),
   )
-  createSeller(
+  async createSeller(
     @Body() dto: SellerRegistrationDto,
     @UploadedFile() nidImage: Express.Multer.File,
   ) {
-    return this.sellerService.createSeller(dto, nidImage);
+    const storedImage = nidImage
+      ? await this.imageStorage.storeNidImage(nidImage)
+      : undefined;
+    return this.sellerService.createSeller(dto, storedImage?.filename);
   }
 
   @Post('login')
@@ -110,7 +117,7 @@ export class SellerController {
         }
       },
       limits: { fileSize: 2 * 1024 * 1024 },
-      storage: diskStorage({
+      storage: createUploadStorage({
         destination: './uploads/products',
         filename: (req, file, cb) => {
           cb(null, Date.now() + '-' + file.originalname);
@@ -118,15 +125,18 @@ export class SellerController {
       }),
     }),
   )
-  createProductForSeller(
+  async createProductForSeller(
     @Param('sellerId', ParseIntPipe) sellerId: number,
     @Body() dto: CreateProductDto,
     @UploadedFile() productImage: Express.Multer.File,
   ) {
+    const storedImage = productImage
+      ? await this.imageStorage.storeImage(productImage, 'products')
+      : undefined;
     return this.sellerService.createProductForSeller(
       sellerId,
       dto,
-      productImage,
+      storedImage?.filename,
     );
   }
 
@@ -153,7 +163,7 @@ export class SellerController {
         }
       },
       limits: { fileSize: 2 * 1024 * 1024 },
-      storage: diskStorage({
+      storage: createUploadStorage({
         destination: './uploads/products',
         filename: (req, file, cb) => {
           cb(null, Date.now() + '-' + file.originalname);
@@ -161,12 +171,19 @@ export class SellerController {
       }),
     }),
   )
-  updateProduct(
+  async updateProduct(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProductDto,
     @UploadedFile() productImage?: Express.Multer.File,
   ) {
-    return this.sellerService.updateProduct(id, dto, productImage);
+    const storedImage = productImage
+      ? await this.imageStorage.storeImage(productImage, 'products')
+      : undefined;
+    return this.sellerService.updateProduct(
+      id,
+      dto,
+      storedImage?.filename,
+    );
   }
 
   @Delete('products/:id')
@@ -203,7 +220,7 @@ export class SellerController {
         }
       },
       limits: { fileSize: 2 * 1024 * 1024 },
-      storage: diskStorage({
+      storage: createUploadStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
           cb(null, Date.now() + '-' + file.originalname);
@@ -211,12 +228,15 @@ export class SellerController {
       }),
     }),
   )
-  updateSeller(
+  async updateSeller(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSellerDto,
     @UploadedFile() nidImage?: Express.Multer.File,
   ) {
-    return this.sellerService.updateSeller(id, dto, nidImage);
+    const storedImage = nidImage
+      ? await this.imageStorage.storeNidImage(nidImage)
+      : undefined;
+    return this.sellerService.updateSeller(id, dto, storedImage?.filename);
   }
 
   @Delete(':id')

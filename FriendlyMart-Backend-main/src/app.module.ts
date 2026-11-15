@@ -41,8 +41,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -52,6 +50,7 @@ import { SellerModule } from './seller/seller.module';
 import { RiderModule } from './rider/rider.module';
 import { ManagerModule } from './manager/manager.module';
 import { PusherModule } from './pusher/pusher.module';
+import { SupabaseStorageModule } from './storage/supabase-storage.module';
 
 @Module({
   imports: [
@@ -60,10 +59,7 @@ import { PusherModule } from './pusher/pusher.module';
       envFilePath: '.env',
     }),
 
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    SupabaseStorageModule,
 
     // Use forRootAsync so ConfigService is available
     TypeOrmModule.forRootAsync({
@@ -72,7 +68,7 @@ import { PusherModule } from './pusher/pusher.module';
         type: 'postgres',
         url: config.get<string>('DATABASE_URL'), //  safely loaded at runtime
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: config.get<string>('NODE_ENV') === 'development',
         ssl: {
           rejectUnauthorized:false
         }

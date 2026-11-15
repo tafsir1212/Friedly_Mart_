@@ -314,6 +314,15 @@ export class ManagerService {
     };
   }
 
+  async getSellerNidImageFilename(id: number): Promise<string> {
+    const seller = await this.sellerRepository.findOne({ where: { id } });
+    if (!seller?.nidImage) {
+      throw new NotFoundException('Seller NID image not found');
+    }
+
+    return seller.nidImage;
+  }
+
   async blockSeller(
     sellerId: number,
     managerId: number,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "../../../lib/api";
+import { API_BASE_URL } from "../../../lib/api-url";
 import Cookies from "js-cookie";
 import Link from "next/link";
 
@@ -103,7 +104,11 @@ export default function ManagerCustomersPage() {
                   <td className="px-4 py-3 text-slate-300">{c.email || "—"}</td>
                   <td className="px-4 py-3">
                     {c.profilePic ? (
-                      <img src={c.profilePic} alt="pic" className="border border-white/10 rounded-full w-8 h-8 object-cover" />
+                      <img
+                        src={`${API_BASE_URL}/uploads/profile/${c.profilePic}`}
+                        alt="pic"
+                        className="border border-white/10 rounded-full w-8 h-8 object-cover"
+                      />
                     ) : (
                       <div className="flex justify-center items-center bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full w-8 h-8 font-bold text-white text-xs">
                         {(c.name || "?")[0].toUpperCase()}

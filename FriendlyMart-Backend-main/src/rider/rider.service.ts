@@ -46,7 +46,7 @@ export class RiderService {
   // ==============================
   async createRider(
     dto: CreateRiderDto,
-    profileImage?: Express.Multer.File,
+    profileImageFilename?: string,
   ): Promise<Rider> {
     try {
       const existingRider = await this.riderRepository.findOne({
@@ -68,7 +68,7 @@ export class RiderService {
         ...dto,
         password: hashedPassword,
         status: dto.status || RiderStatus.OFFLINE,
-        profileImage: profileImage ? profileImage.filename : null,
+        profileImage: profileImageFilename ?? null,
       });
 
       const savedRider = await this.riderRepository.save(rider);
@@ -171,7 +171,7 @@ export class RiderService {
   async updateRider(
     id: number,
     dto: Partial<CreateRiderDto>,
-    profileImage?: Express.Multer.File,
+    profileImageFilename?: string,
   ): Promise<Rider> {
     const rider = await this.riderRepository.findOne({
       where: { id },
@@ -185,8 +185,8 @@ export class RiderService {
       dto.password = await bcrypt.hash(dto.password, 10);
     }
 
-    if (profileImage) {
-      rider.profileImage = profileImage.filename;
+    if (profileImageFilename) {
+      rider.profileImage = profileImageFilename;
     }
 
     Object.assign(rider, dto);

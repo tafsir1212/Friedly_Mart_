@@ -1,3 +1,4 @@
+import { getJwtSecret } from '../auth/jwt-secret';
 import { Module } from '@nestjs/common';
 import { CustomerController } from './customer.controller';
 import { CustomerService } from './customer.service';
@@ -39,9 +40,11 @@ import { PusherModule } from 'src/pusher/pusher.module';
 
     // ✅ JWT
     PassportModule,
-    JwtModule.register({
-      secret: 'mySecretKey',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: getJwtSecret(),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
 
     // ✅ MAILER CONFIG (SAME AS SELLER)

@@ -1,3 +1,4 @@
+import { getJwtSecret } from '../auth/jwt-secret';
 // import { Module } from '@nestjs/common';
 // import { SellerController } from './seller.controller';
 // import { SellerService } from './seller.service';
@@ -52,9 +53,11 @@ import { PusherModule } from 'src/pusher/pusher.module';
     //   },
     // }),
     MailModule,
-    JwtModule.register({
-      secret: 'mySecretKey', //
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: getJwtSecret(),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
     TypeOrmModule.forFeature([
       SellerEntity,
